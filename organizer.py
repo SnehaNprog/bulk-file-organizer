@@ -12,3 +12,4 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="organize the files")
     parser.add_argument('source' ,help = 'path to mess' )
     args = parser.parse_args()
+    print("org in :",args.source)
