@@ -4,6 +4,7 @@
 # This will allow us to specify the target directory when we run the script.
 import argparse
 import sys
+import shutil
 
 # Import the pathlib module to work with file system paths in an object-oriented way.
 # This makes path manipulation more intuitive and cross-platform compatible.
@@ -24,6 +25,23 @@ def org_dir(source_path : pathlib.Path):
         if item.is_file():
             file_extension = item.suffix
             print(f"foundfile : {item.name} extension :{file_extension}")
+            destination_folder_name = 'Other'
+
+            for category , extension in FILE_TYPE_MAP.items():
+                if file_extension in extension:
+                    destination_folder_name = category
+                    break
+            destination_dir = source_path / destination_folder_name
+
+            destination_dir.mkdir(parents=True, exist_ok=True)
+
+            destination_file_path = destination_dir/item.name
+
+            shutil.move(item , destination_file_path)
+
+            print(f"file {item.name} destination {destination_dir}")
+
+
 
 
 
