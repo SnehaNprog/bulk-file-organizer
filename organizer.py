@@ -7,7 +7,14 @@ import argparse
 # Import the pathlib module to work with file system paths in an object-oriented way.
 # This makes path manipulation more intuitive and cross-platform compatible.
 import pathlib
-
+FILE_TYPE_MAP = {
+    "Images" : ['.jpeg','.jpg','.png','.gif','.svg'],
+    "Documents" : ['.pdf', '.docx','.txt','.xlsx','.srt'],
+    "Audio" : ['.mp3','.wav','.aac'],
+    "Video":['.mp4','.mov','.avi','.mkv'],
+    "Archives":['.zip','.rar','.tar','.gz','.tar'],
+    "Other":[]
+}
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="organize the files")
     parser.add_argument('source' ,help = 'path to mess' )
