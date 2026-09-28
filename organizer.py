@@ -25,6 +25,40 @@ def load_config(config_path:pathlib.Path):
         sys.exit(1)
 
 
+def process_file(item : pathlib.Path ,FILE_TYPE_MAP :dict , dry_run : bool , source_path : pathlib.Path  ):
+    file_extension = item.suffix
+    print(f"foundfile : {item.name} extension :{file_extension}")
+    destination_folder_name = 'Other'
+    for category , extension in FILE_TYPE_MAP.items():
+                if file_extension in extension:
+                    destination_folder_name = category
+                    break
+    destination_dir = source_path / destination_folder_name
+    if dry_run:
+                destination_file_path = destination_dir/item.name
+                logging.info(f"dry run would move '{item.name}' to '{destination_file_path}'")
+    else:
+        destination_dir.mkdir(parents=True, exist_ok=True)
+        destination_file_path = destination_dir/item.name
+        counter = 1 
+        while destination_file_path.exists():
+            logging.warning(f"Conflict '{destination_file_path}' already exists")
+            new_filename = f"{item.stem}({counter}){item.suffix}"
+            destination_file_path = destination_dir/new_filename
+            counter +=1
+        try:
+            shutil.move(item , destination_file_path)
+            logging.INFO(f"file {item.name} destination {destination_dir}")
+        except (FileExistsError , PermissionError) as e:
+            logging.error(f"Could not move the '{item.name}' , Error: {e}") 
+        except Exception as e:
+            logging.error("an unexpected error occured while processing '{item.name}', error : {e}")
+    
+    
+
+
+    
+
 def org_dir(source_path : pathlib.Path , dry_run:bool , FILE_TYPE_MAP:dict):
     logging.info(f"organizing in source_path" )
     if dry_run:
@@ -34,35 +68,7 @@ def org_dir(source_path : pathlib.Path , dry_run:bool , FILE_TYPE_MAP:dict):
 
     files_to_process = [item for item in source_path.iterdir() if item.is_file()]
     for item in tqdm(files_to_process , desc= "organizing files"):
-        file_extension = item.suffix
-        print(f"foundfile : {item.name} extension :{file_extension}")
-        destination_folder_name = 'Other'
-
-        for category , extension in FILE_TYPE_MAP.items():
-            if file_extension in extension:
-                destination_folder_name = category
-                break
-        destination_dir = source_path / destination_folder_name
-
-        if dry_run:
-            destination_file_path = destination_dir/item.name
-            logging.info(f"dry run would move '{item.name}' to '{destination_file_path}'") 
-        else:
-             destination_dir.mkdir(parents=True, exist_ok=True)
-             destination_file_path = destination_dir/item.name
-             counter = 1 
-             while destination_file_path.exists():
-                logging.warning(f"Conflict '{destination_file_path}' already exists")
-                new_filename = f"{item.stem}({counter}){item.suffix}"
-                destination_file_path = destination_dir/new_filename
-                counter +=1
-             try:
-                shutil.move(item , destination_file_path)
-                logging.INFO(f"file {item.name} destination {destination_dir}")
-             except (FileExistsError , PermissionError) as e:
-                logging.error(f"Could not move the '{item.name}' , Error: {e}") 
-             except Exception as e:
-                logging.error("an unexpected error occured while processing '{item.name}', error : {e}")
+         process_file(item , FILE_TYPE_MAP ,dry_run , source_path )
 
 
 
