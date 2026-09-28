@@ -6,24 +6,26 @@ import argparse
 import sys
 import logging
 import shutil
+import json
+import pathlib
 
 from tqdm import tqdm
 
 
-# Import the pathlib module to work with file system paths in an object-oriented way.
-# This makes path manipulation more intuitive and cross-platform compatible.
-import pathlib
-FILE_TYPE_MAP = {
-    "Images" : ['.jpeg','.jpg','.png','.gif','.svg'],
-    "Documents" : ['.pdf', '.docx','.txt','.xlsx','.srt'],
-    "Audio" : ['.mp3','.wav','.aac'],
-    "Video":['.mp4','.mov','.avi','.mkv'],
-    "Archives":['.zip','.rar','.tar','.gz','.tar'],
-    "Other":[]
-}
+def load_config(config_path:pathlib.Path):
+    try:
+        with open (config_path, 'r') as config_file:
+            config_data = json.load(config_file)
+            return config_data
+    except FileNotFoundError:
+        logging.error(f"config file not found at '{config_path}'")
+        sys.exit(1)
+    except json.JSONDecodeError as e :
+        logging.error(f"the config contains invalid json '{e}'")
+        sys.exit(1)
 
 
-def org_dir(source_path : pathlib.Path , dry_run:bool):
+def org_dir(source_path : pathlib.Path , dry_run:bool , FILE_TYPE_MAP:dict):
     logging.info(f"organizing in source_path" )
     if dry_run:
         logging.info("--Dry_Run mode enabled no files will be moved")
@@ -76,6 +78,9 @@ if __name__ == "__main__":
     parser.add_argument('--dry-run',action= 'store_true',help='Stimulate the org without moving the file')
     args = parser.parse_args()
 
+    config_file_path = pathlib.Path(__file__).parent/"config.json"
+    file_type_map_from_config = load_config(config_file_path)
+
     source_path = pathlib.Path(args.source)
 
     logging.basicConfig(
@@ -86,10 +91,11 @@ if __name__ == "__main__":
             logging.StreamHandler(sys.stdout)
         ]
     )
-    org_dir(source_path)
     if not source_path.exists() or not source_path.is_dir():
         print(f"error:'{source_path}'does not exists or is not a directory")
         sys.exit(1)
+    
+    org_dir(source_path , args.dry_run , file_type_map_from_config )
 
     print("org in :",source_path)
 
