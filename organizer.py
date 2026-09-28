@@ -1,7 +1,6 @@
-# organizer.py
+#modular docstring explain what a certain module or file does , this one org the path u give it 
+#in different folders , you can prog it externally with config.json 
 
-# Import the argparse module to handle command-line arguments.
-# This will allow us to specify the target directory when we run the script.
 import argparse
 import sys
 import logging
@@ -13,6 +12,20 @@ from tqdm import tqdm
 
 
 def load_config(config_path:pathlib.Path):
+
+
+    """
+    Loads and validates the organization rules from a JSON configuration file.
+
+    This function attempts to open and parse the specified JSON file. It handles
+    potential FileNotFoundError and json.JSONDecodeError, logging helpful
+    error messages and exiting the script if the configuration is invalid or missing.
+    Args:
+    config_path (pathlib.Path): The path to the config.json file.
+    Returns:
+    dict: A dictionary containing the file type mappings.
+    """
+    
     try:
         with open (config_path, 'r') as config_file:
             config_data = json.load(config_file)
@@ -26,6 +39,21 @@ def load_config(config_path:pathlib.Path):
 
 
 def process_file(item : pathlib.Path ,FILE_TYPE_MAP :dict , dry_run : bool , source_path : pathlib.Path  ):
+
+    """
+    Processes a single file: determines its destination and moves it or simulates the move.
+
+    This function is the core worker of the organization process. It finds the
+    appropriate category for the file based on its extension, handles potential
+    filename conflicts by renaming the file if necessary, and performs the
+    actual move operation with error handling.
+
+    Args:
+        file_path (pathlib.Path): The path to the file to be processed.
+        source_path (pathlib.Path): The root directory where organization is happening.
+        file_type_map (dict): The dictionary of organization rules.
+        dry_run (bool): If True, simulate the file move; otherwise, perform it.
+    """
     file_extension = item.suffix
     print(f"foundfile : {item.name} extension :{file_extension}")
     destination_folder_name = 'Other'
@@ -60,6 +88,22 @@ def process_file(item : pathlib.Path ,FILE_TYPE_MAP :dict , dry_run : bool , sou
     
 
 def org_dir(source_path : pathlib.Path , dry_run:bool , FILE_TYPE_MAP:dict):
+
+    """
+    Orchestrates the file organization process for a given directory.
+
+    This function serves as the main entry point for the organization logic.
+    It announces the operational mode (dry run or live), discovers all files
+    in the source directory, and then delegates the processing of each file
+    to the process_file function.
+
+    Args:
+        source_path (pathlib.Path): The directory to be organized.
+        dry_run (bool): If True, simulate without moving files.
+        file_type_map (dict): A dictionary mapping folder names to file extensions.
+    """
+
+
     logging.info(f"organizing in source_path" )
     if dry_run:
         logging.info("--Dry_Run mode enabled no files will be moved")
@@ -69,11 +113,6 @@ def org_dir(source_path : pathlib.Path , dry_run:bool , FILE_TYPE_MAP:dict):
     files_to_process = [item for item in source_path.iterdir() if item.is_file()]
     for item in tqdm(files_to_process , desc= "organizing files"):
          process_file(item , FILE_TYPE_MAP ,dry_run , source_path )
-
-
-
-
-
 
 
 
